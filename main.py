@@ -3,6 +3,7 @@ import pandas as pd
 from pathlib import Path
 
 from src.test_FTE_and_GAP import Test_FTE_and_GAP
+from src.test_FTE_and_GAP import Test_Regression_Adjusted_Models    
 from src.data_prep import NJPADataLoader
 
 def main():
@@ -14,6 +15,7 @@ def main():
     data_frame = fte_gap_test.add_computed_columns(data_frame)
     fte_gap_test.test_computed_values(data_frame)
 
+    ram_test = Test_Regression_Adjusted_Models()
     
 
 if __name__ == "__main__":

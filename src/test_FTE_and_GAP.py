@@ -9,7 +9,15 @@ class Test_FTE_and_GAP:
         """Return a copy with the primary derived columns added."""
         augmented = data_frame.copy()
 
-        # Full-time-equivalent employment includes half of part-time employment.
+        # Full-Time Equivalent is a way to statistically combine full-time and part-time headcounts into one number for each store. 
+        # This is crucial to check because the entire paper is built on this variable and if it is incorrect it will cause a lot of problems later. 
+        # (DiD, regressions) FTE1 is the first full-time equivalent employment as it is the data collected during the first survey before the minimum wage increase. 
+        # The formula for FTE is: FTE1 = EMPFT + NMGRS + 0.5*EMPPT
+        # EMPFT = Full-Time Employee    
+        # EMPPT = Part-Time Employee
+        # NMGRS = Number of Managers
+        # They assumed each part-time employee as half a worker and assumes each part time employee contributes about half the labor of a full time employee
+        # It may look like I am multiplying a list by a number but with pandas a Series allows me to apply an operation to every element inside of it. 
         augmented["FTE1"] = (
             augmented["EMPFT"]
             + augmented["NMGRS"]
@@ -37,6 +45,13 @@ class Test_FTE_and_GAP:
         self, data_frame: pd.DataFrame, rows: int = 5
     ):
         """Print computed values for inspection."""
+
+        # EMPFT has 6 missing values and EMPPT has 4 (out of 410 stores), so a small number of stores will have FTE1 = NaN. 
+        # When computing .mean() by state, pandas automatically excludes these missing rows from the average (this is the default skipna=True behavior) 
+        # rather than treating them as zero.
+        # Now I must sort my results by state because Card and Kreuger took data from both New Jersey and Pennsylvania 
+        # (they used Pennsylvania as a control group) 
+
         print("Results_FTE_and_GAP\n=====================")
         print("\nFTE1 mean:")
         print(data_frame.groupby("STATE")["FTE1"].mean())
@@ -55,7 +70,7 @@ class Test_FTE_and_GAP:
         print(group_means)
 
 
-        print("\nDifferences in FTe2 and FTE1 by state:")
+        print("\n1.3 Change in Employment: Differences in FTE2 and FTE1 by state:")
         # Extract the difference between the mean FTE2 and FTE1 for each state
         nj_fte2 = float(group_means.loc["New Jersey", "FTE2"])
         nj_fte1 = float(group_means.loc["New Jersey", "FTE1"])
