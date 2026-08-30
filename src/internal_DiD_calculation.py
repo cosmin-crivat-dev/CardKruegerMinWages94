@@ -1,11 +1,8 @@
 import pandas as pd
 
 
-def internal_DiD_Calculation(data_frame: pd.DataFrame) -> pd.Series:
+def run_internal_DiD_Calculation(data_frame: pd.DataFrame) -> pd.Series:
     """Return the within-New Jersey internal DiD estimate using low- vs high-wage stores."""
-    data_frame = data_frame.copy()
-    data_frame["FTE1"] = data_frame["EMPFT"] + data_frame["NMGRS"] + 0.5 * data_frame["EMPPT"]
-    data_frame["FTE2"] = data_frame["EMPFT2"] + data_frame["NMGRS2"] + 0.5 * data_frame["EMPPT2"]
 
     new_jersey = data_frame[data_frame["STATE"] == "New Jersey"].copy()
     below_minimum = new_jersey[new_jersey["WAGE_ST"] < 5.05]
@@ -26,12 +23,9 @@ def internal_DiD_Calculation(data_frame: pd.DataFrame) -> pd.Series:
     return result
 
 
-def internal_DiD_Calculation_Print():
+def internal_DiD_Calculation_Print(data_frame: pd.DataFrame):
     """Print the within-New Jersey internal DiD estimate."""
-    from src.data_prep import NJPADataLoader
-
-    data_frame = NJPADataLoader().load()
-    estimates = internal_DiD_Calculation(data_frame)
+    estimates = run_internal_DiD_Calculation(data_frame)
     print(f"Low-wage NJ change: {estimates.loc['Low_wage_NJ']:.4f}")
     print(f"High-wage NJ change: {estimates.loc['High_wage_NJ']:.4f}")
     print(f"Internal DiD estimate: {estimates.loc['internal_DiD']:.4f}")

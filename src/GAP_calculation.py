@@ -1,9 +1,8 @@
 import pandas as pd
 
 
-def GAP_Calculation(data_frame: pd.DataFrame) -> pd.Series:
+def run_GAP_Calculation(data_frame: pd.DataFrame) -> pd.Series:
     """Return average gap values for states, using the paper's NJ-below-minimum subset."""
-    data_frame = data_frame.copy()
 
     new_jersey_below_minimum = (
         (data_frame["STATE"] == "New Jersey")
@@ -30,11 +29,8 @@ def GAP_Calculation(data_frame: pd.DataFrame) -> pd.Series:
     return averages
 
 
-def GAP_Calculation_Print():
+def GAP_Calculation_Print(data_frame: pd.DataFrame):
     """Print the average GAP values for New Jersey and Pennsylvania."""
-    from src.data_prep import NJPADataLoader
-
-    data_frame = NJPADataLoader().load()
-    averages = GAP_Calculation(data_frame)
+    averages = run_GAP_Calculation(data_frame)
     print(f"New Jersey average GAP: {averages.loc['New Jersey']:.4f}")
     print(f"Pennsylvania average GAP: {averages.loc['Pennsylvania']:.4f}")

@@ -1,3 +1,4 @@
+from src.data_prep import NJPADataLoader
 from src.DiD_calculation import DiD_Calculation_Print
 from src.DiD_t_value_calculation import DiD_t_value_Calculation_Print
 from src.FTE1_calculation import FTE_1_Calculation
@@ -11,6 +12,11 @@ from src.standard_error_DiD_calculation import standard_error_DiD_Calculation_Pr
 
 
 def main():
+
+    # Read the original data
+    data_frame = NJPADataLoader().load()
+
+
     # MODULE 1 - Variable Construction Check
     
     # First variable I am checking: FTE1 (Full-Time Equivalent) employment 1
@@ -26,14 +32,14 @@ def main():
     # NMGRS = Number of Managers
     # They assumed each part-time employee as half a worker and assumes each part time
     # employee contributes about half the labor of a full time employee
-    FTE_1_Calculation()
+    FTE_1_Calculation(data_frame)
     # I got values of 20.439 and 23.3312 for New Jersey and Pennsylvania respectively.
     # These values are the same as those in the paper. (Reported in Table 3)
 
     # FTE2 is the second survey measure, using the same formula with the
     # second-wave values which were recorded after the minimum wage increase.
     # The formula is: FTE2 = EMPFT2 + NMGRS2 + 0.5*EMPPT2
-    FTE_2calculation()
+    FTE_2calculation(data_frame)
     # The reported values are approximately 21.03 for New Jersey and 21.17 for
     # Pennsylvania. These values are also the same as those reported in the paper.
     # (Reported in Table 3)
@@ -50,7 +56,7 @@ def main():
     # This is an extremely important variable because if GAP reflects a change in 
     # employment that is strong evidence that the minimum wage change itself is the 
     # cause, not something else going on in New Jersey
-    GAP_Calculation_Print()
+    GAP_Calculation_Print(data_frame)
     #The calculated GAP values are 0.1152 for New Jersey and 0 for Pennsylvania 
     # which matches the values reported in the paper (Reported in Table 3). The 
     # value for Pennsulvania is 0 because ther was no change in minimum wage in 
@@ -68,7 +74,7 @@ def main():
     #The formula they used was DiD = New Jersey Difference - Pennsylvania Difference 
     #Each State's respective difference is the difference between the first 
     # FTE and the second FTE.
-    DiD_Calculation_Print()
+    DiD_Calculation_Print(data_frame)
     #The DiD estimate returned was 2.7536 which is very close to the value reported in the 
     # paper of 2.76 (Reported in Section III.A ("Differences in Differences")
 
@@ -83,20 +89,20 @@ def main():
     # stores. Low wage stores were paying 4.25 (the old minimum wage exactly) and 
     # high wage stores were paying $5.00 or more. the internal DiD formula was 
     # DiDinternal = Low Wage NJ Difference - High Wage NJ Difference
-    internal_DiD_Calculation_Print()
+    internal_DiD_Calculation_Print(data_frame)
     #the internal DiD estimate value was not explicitly reported in the paper.
     
     #The next check Card and Kreuger performed was the standard error of the DiD estimate.
     #the standard error measures how much the DiD estimate would very if the experiment
     # was repeated multiple times.
-    standard_error_DiD_Calculation_Print()
+    standard_error_DiD_Calculation_Print(data_frame)
     #the standard error was not explicitly reported in the paper.
 
     #Card and Krueger reported the t value of the DiD estimate as 2.03 (Section III.A ("Differences in Differences")
     #a t value measures how many standard errors away your estimate is from the 
     #mean. A higher t value means your estimate is more statistically significant
     #the formula for a t value is t = DiD/SE(DiD)
-    DiD_t_value_Calculation_Print()
+    DiD_t_value_Calculation_Print(data_frame)
     #The calculated t value is 2.1048 which is very close to the the reported DiD estimate
     #and is statistically significant 
 
@@ -120,7 +126,7 @@ def main():
     #c = what this model is made to estimate, how much being in New Jersey shifts the predicted employment change,
     #  holding chain type and ownership constant
     #εi= the error term
-    NJ_Dummy_Regression_Print()
+    NJ_Dummy_Regression_Print(data_frame)
     #my results were: My results on the left, Card and Kruegers results on the rightn
     #NJ coefficient	2.2815	≈2.30
     #NJ standard error	1.197	≈1.20
@@ -142,7 +148,7 @@ def main():
     # of a stores GAP variable (how much they had to raise wages) cause a bigger 
     # employment change. instead of measuring GAP as a 0 or 1 as we were before, GAP is 
     #now a continuous measure.
-    GAP_Regression_Print()
+    GAP_Regression_Print(data_frame)
     #my results were; My results	Paper's target
     #GAP coefficient	16.3631	14.92
     #GAP standard error	6.237	6.21
@@ -160,7 +166,7 @@ def main():
     #was significant to the change in Employment, and the horse race is checking if 
     #once GAP is accounted for, NJ still has that borderline significance. 
     #the horse race equation is: ΔEi​=a′′+b′′Xi​+c1​⋅NJi​+c2​⋅GAPi​+εi′′​
-    Horse_Race_Regression_Print()
+    Horse_Race_Regression_Print(data_frame)
     #this is the most important test in the entire paper because it goes against the 
     #most obvious objection: that some other factor caused the increase in employment
     #after running the Horse Race Regression the coefficient dropped from Model 1: 
