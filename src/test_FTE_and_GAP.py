@@ -2,43 +2,46 @@ import numpy as np
 import pandas as pd
 
 
-class Test_FTE_and_GAP:
+def compute_fte1(data_frame: pd.DataFrame) -> pd.Series:
+    """Return the first survey full-time equivalent employment values."""
+    values = (data_frame["EMPFT"] + data_frame["NMGRS"]) + 0.5 * data_frame["EMPPT"]
+    values.name = "FTE1"
+    return values
+
+
+def compute_fte2(data_frame: pd.DataFrame) -> pd.Series:
+    """Compute the second survey full-time equivalent employment."""
+    values = (data_frame["EMPFT2"] + data_frame["NMGRS2"]) + 0.5 * data_frame["EMPPT2"]
+    values.name = "FTE2"
+    return values
+
+
+def compute_gap(data_frame: pd.DataFrame) -> pd.Series:
+    """Compute the New Jersey wage-gap measure for below-minimum stores."""
+    new_jersey_below_minimum = (
+        (data_frame["STATE"] == "New Jersey")
+        & (data_frame["WAGE_ST"] < 5.05)
+    )
+
+    gap_values = pd.Series(np.nan, index=data_frame.index, dtype="float64")
+    gap_values.loc[new_jersey_below_minimum] = (
+        ((5.05 - data_frame.loc[new_jersey_below_minimum, "WAGE_ST"]) /
+         data_frame.loc[new_jersey_below_minimum, "WAGE_ST"]).round(4)
+    )
+    return gap_values.fillna(0.0).rename("GAP")
+
+
+class NJPAFTEGapComputation:
     """Add derived employment and wage variables to the loaded data frame."""
+    __test__ = False
 
     def add_computed_columns(self, data_frame: pd.DataFrame) -> pd.DataFrame:
         """Return a copy with the primary derived columns added."""
         augmented = data_frame.copy()
 
-        # Full-Time Equivalent is a way to statistically combine full-time and part-time headcounts into one number for each store. 
-        # This is crucial to check because the entire paper is built on this variable and if it is incorrect it will cause a lot of problems later. 
-        # (DiD, regressions) FTE1 is the first full-time equivalent employment as it is the data collected during the first survey before the minimum wage increase. 
-        # The formula for FTE is: FTE1 = EMPFT + NMGRS + 0.5*EMPPT
-        # EMPFT = Full-Time Employee    
-        # EMPPT = Part-Time Employee
-        # NMGRS = Number of Managers
-        # They assumed each part-time employee as half a worker and assumes each part time employee contributes about half the labor of a full time employee
-        # It may look like I am multiplying a list by a number but with pandas a Series allows me to apply an operation to every element inside of it. 
-        augmented["FTE1"] = (
-            augmented["EMPFT"]
-            + augmented["NMGRS"]
-            + 0.5 * augmented["EMPPT"]
-        )
-        augmented["FTE2"] = (
-            augmented["EMPFT2"]
-            + augmented["NMGRS2"]
-            + 0.5 * augmented["EMPPT2"]
-        )
-
-        # GAP is the proportional increase needed to reach the NJ minimum wage.
-        new_jersey_below_minimum = (
-            (augmented["STATE"] == "New Jersey")
-            & (augmented["WAGE_ST"] < 5.05)
-        )
-        augmented["GAP"] = np.select(
-            [augmented["WAGE_ST"].isna(), new_jersey_below_minimum],
-            [np.nan, (5.05 - augmented["WAGE_ST"]) / augmented["WAGE_ST"]],
-            default=0,
-        )
+        augmented["FTE1"] = compute_fte1(augmented)
+        augmented["FTE2"] = compute_fte2(augmented)
+        augmented["GAP"] = compute_gap(augmented)
         return augmented
 
     def test_computed_values(
@@ -84,4 +87,12 @@ class Test_FTE_and_GAP:
         print(f"NJ change: {nj_change}")
         print(f"PA change: {pa_change}")
         print(f"DiD estimate: {did_estimate}")
+
+        sample = data_frame[["SHEET", "STATE", "FTE1", "FTE2", "GAP"]].head(rows)
+        return sample
+
+
+NJPAVariableAugmenter = NJPAFTEGapComputation
+Test_FTE_and_GAP = NJPAFTEGapComputation
+Test_FTE_and_GAP.__test__ = False
 
