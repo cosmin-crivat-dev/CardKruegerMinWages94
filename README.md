@@ -1,6 +1,8 @@
-# Minimum Wages and Employment: A Case Study of the Fast-Food Industry in New Jersey and Pennsylvania
+# CartKruegerMinWages94
 
 This is a Python solution designed to verify the numeric analysis in a published paper.
+The Python program replicates and verifies the paper calculations over the original data.
+
 
 The paper is:
 
